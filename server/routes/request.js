@@ -7,7 +7,7 @@ const {
   getReceivedRequests,
   updateRequestStatus,
   getUsersBySkill,
-} = require("../controllers/Request");
+} = require("../controllers/request");
 
 const { auth } = require("../middlewares/Auth"); // Authentication middleware
 
