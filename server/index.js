@@ -22,7 +22,7 @@ app.use(express.json());
 connect();
 
 // Routes
-const userRoutes = require("./routes/User");
+const userRoutes = require("./routes/user");
 const requestRoutes = require("./routes/request");
 const chatRoutes = require("./routes/chat");
 
