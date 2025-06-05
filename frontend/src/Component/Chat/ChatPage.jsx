@@ -10,7 +10,7 @@ const ChatPage = () => {
   const fetchChats = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("http://localhost:4000/api/v1/chat/chats", {
+      const res = await axios.get("https://swapskill-3546.onrender.com/api/v1/chat/chats", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChats(res.data.chats);

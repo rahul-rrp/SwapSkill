@@ -22,7 +22,7 @@ const SendRequestForm = () => {
     };
 
     try {
-      await axios.post("http://localhost:4000/api/v1/request/request", payload, {
+      await axios.post("https://swapskill-3546.onrender.com/api/v1/request/request", payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("Request sent successfully!");

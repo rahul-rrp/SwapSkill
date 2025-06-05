@@ -11,7 +11,7 @@ const ChatWindow = ({ chat }) => {
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(
-        `http://localhost:4000/api/v1/chat/chat/${chat._id}/messages`,
+        `https://swapskill-3546.onrender.com/api/v1/chat/chat/${chat._id}/messages`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessages(data.messages);
@@ -24,7 +24,7 @@ const ChatWindow = ({ chat }) => {
     if (!text.trim()) return;
     try {
       await axios.post(
-        "http://localhost:4000/api/v1/chat/chat/message",
+        "https://swapskill-3546.onrender.com/api/v1/chat/chat/message",
         { chatId: chat._id, text },
         { headers: { Authorization: `Bearer ${token}` } }
       );

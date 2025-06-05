@@ -23,7 +23,7 @@ const SentRequestsList = () => {
         }
 
         const res = await axios.get(
-          "http://localhost:4000/api/v1/request/requests/sent",
+          "https://swapskill-3546.onrender.com/api/v1/request/requests/sent",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
