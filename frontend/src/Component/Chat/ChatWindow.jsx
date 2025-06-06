@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const ChatWindow = ({ chat }) => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const scrollRef = useRef(null);
 
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -11,8 +12,10 @@ const ChatWindow = ({ chat }) => {
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(
-        `https://swapskill-3546.onrender.com/api/v1/chat/chat/${chat._id}/messages`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${import.meta.env.VITE_BACKEND_URL}/chat/${chat._id}/messages`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setMessages(data.messages);
     } catch (err) {
@@ -22,11 +25,14 @@ const ChatWindow = ({ chat }) => {
 
   const sendMessage = async () => {
     if (!text.trim()) return;
+
     try {
       await axios.post(
-        "https://swapskill-3546.onrender.com/api/v1/chat/chat/message",
+        `${import.meta.env.VITE_BACKEND_URL}/chat/message`,
         { chatId: chat._id, text },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setText("");
       fetchMessages();
@@ -39,14 +45,22 @@ const ChatWindow = ({ chat }) => {
     fetchMessages();
   }, [chat]);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex-1 p-4 space-y-2 overflow-y-auto bg-white">
+      <div className="flex-1 p-4 space-y-2 overflow-y-auto bg-white" ref={scrollRef}>
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`p-2 rounded max-w-xs w-fit ${
-              msg.senderId?._id === userId ? "bg-blue-100 self-end" : "bg-gray-200"
+              msg.senderId?._id?.toString() === userId
+                ? "bg-blue-100 self-end"
+                : "bg-gray-200"
             }`}
           >
             {msg.text}
@@ -61,8 +75,9 @@ const ChatWindow = ({ chat }) => {
           placeholder="Type a message..."
         />
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
+          className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 disabled:opacity-50"
           onClick={sendMessage}
+          disabled={!text.trim()}
         >
           Send
         </button>

@@ -169,3 +169,32 @@ exports.getUsersBySkill = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+exports.getAcceptedRequests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Find all requests where the logged-in user is involved and status is "Accepted"
+    const requests = await Request.find({
+      $or: [{ sender: userId }, { receiver: userId }],
+      status: "Accepted"
+    })
+    .populate("sender", "firstName lastName email")
+    .populate("receiver", "firstName lastName email");
+
+    return res.status(200).json({
+      success: true,
+      requests,
+    });
+
+  } catch (error) {
+    console.error("Error fetching accepted requests:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch accepted requests",
+      error: error.message
+    });
+  }
+};

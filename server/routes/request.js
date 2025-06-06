@@ -7,6 +7,7 @@ const {
   getReceivedRequests,
   updateRequestStatus,
   getUsersBySkill,
+  getAcceptedRequests
 } = require("../controllers/request");
 
 const { auth } = require("../middlewares/Auth"); // Authentication middleware
@@ -25,5 +26,7 @@ router.put("/request/:requestId", auth, updateRequestStatus);
 
 // Get Users by Skill
 router.get("/user/userbyskills", auth, getUsersBySkill);
+
+router.get("/request/accepted",auth,getAcceptedRequests);
 
 module.exports = router;
