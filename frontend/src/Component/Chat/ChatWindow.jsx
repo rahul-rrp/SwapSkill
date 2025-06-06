@@ -28,7 +28,7 @@ const ChatWindow = ({ chat }) => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/message`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/chat/chat/message`,
         { chatId: chat._id, text },
         {
           headers: { Authorization: `Bearer ${token}` },
