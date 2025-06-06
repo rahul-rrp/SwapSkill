@@ -24,24 +24,27 @@ const ChatPage = () => {
     }
   };
 
-  const fetchAcceptedUsers = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/request/request/accepted`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      // Assume res.data.requests is an array of accepted requests with sender and receiver populated
-      // Get the other user from each request (not the logged-in user)
-      const users = res.data.requests.map((req) =>
-        req.sender._id === userId ? req.receiver : req.sender
-      );
-      setAcceptedUsers(users);
-    } catch (error) {
-      console.error("Error fetching accepted users", error);
-    }
-  };
+ const fetchAcceptedUsers = async () => {
+  try {
+    const res = await axios.get(
+      `https://swapskill-3546.onrender.com/api/v1/request/accepted`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const loggedInUserId = localStorage.getItem("userId"); // current user ID
+
+    const users = res.data.requests.map((req) => {
+      // return the other user's ID
+      return req.senderId === loggedInUserId ? req.receiverId : req.senderId;
+    });
+console.log(users)
+    setAcceptedUsers(users);
+  } catch (error) {
+    console.error("Error fetching accepted users", error);
+  }
+};
 
   useEffect(() => {
     fetchChats();
@@ -62,7 +65,7 @@ const ChatPage = () => {
       // Create a new chat with this user
       try {
         const res = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/v1/chat`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/v1/chat/chat`,
           { participantId: user._id },
           { headers: { Authorization: `Bearer ${token}` } }
         );

@@ -1,5 +1,7 @@
 const Request = require("../models/Request");
 const User = require("../models/User");
+const mongoose = require("mongoose");
+
 
 // Create a new skill exchange request
 exports.createRequest = async (req, res) => {
@@ -174,15 +176,18 @@ exports.getUsersBySkill = async (req, res) => {
 
 exports.getAcceptedRequests = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    // Find all requests where the logged-in user is involved and status is "Accepted"
     const requests = await Request.find({
-      $or: [{ sender: userId }, { receiver: userId }],
-      status: "Accepted"
+      $or: [
+        { senderId: userId },
+        { receiverId: userId }
+      ],
+      response: "accepted"
     })
-    .populate("sender", "firstName lastName email")
-    .populate("receiver", "firstName lastName email");
+      .populate("senderId", "firstName LastName email")   // populate senderId with name and email
+      .populate("receiverId", "firstName lastName email") // populate receiverId with name and email
+      .lean();
 
     return res.status(200).json({
       success: true,

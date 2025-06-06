@@ -27,6 +27,6 @@ router.put("/request/:requestId", auth, updateRequestStatus);
 // Get Users by Skill
 router.get("/user/userbyskills", auth, getUsersBySkill);
 
-router.get("/request/accepted",auth,getAcceptedRequests);
+router.get("/accepted",auth,getAcceptedRequests);
 
 module.exports = router;
