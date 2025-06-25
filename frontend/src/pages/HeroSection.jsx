@@ -155,7 +155,7 @@ const HeroSection = () => {
             className="mb-6"
           >
             <motion.img
-              src="/logo.png"
+              src="../../logo.png"
               alt="SkillSwap Logo"
               className="mx-auto w-24 h-24 object-contain rounded-full shadow-lg"
               whileHover={{ rotate: [0, 7, -7, 0], scale: 1.08 }}
@@ -344,7 +344,7 @@ const HeroSection = () => {
             transition={{ delay: 0.8, duration: 1 }}
           >
             <motion.img
-              src="logo1.png"
+              src="../../logo1.png"
               alt="SkillSwap Community"
               className="w-full max-w-md rounded-xl object-cover shadow-xl"
               animate={{ y: [0, -12, 0] }}
