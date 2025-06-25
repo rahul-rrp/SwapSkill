@@ -8,7 +8,53 @@ import SentRequestsList from "../Component/SentRequestsList";
 import ReceivedRequestsList from "../Component/ReceivedRequestsList";
 import SearchUsersBySkill from "../Component/SearchUsersBySkill";
 import ChatPage from "../Component/Chat/ChatPage";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+const navItems = [
+  { to: "/", label: "🏠 Dashboard" },
+  { to: "/requests/find", label: "🔍 Find by Skill" },
+  { to: "/requests/sent", label: "📦 Sent Requests" },
+  { to: "/requests/received", label: "📥 Received Requests" },
+  { to: "/chat", label: "💬 Chat" },
+];
+
+const sidebarVariants = {
+  open: { x: 0, transition: { type: "spring", stiffness: 120, damping: 20 } },
+  closed: { x: -320, transition: { type: "spring", stiffness: 120, damping: 20 } },
+};
+
+const navItemVariants = {
+  initial: { opacity: 0, y: 10, scale: 0.95 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 20 } },
+  hover: {
+    scale: 1.05,
+    boxShadow: "0 0 8px rgba(102, 126, 234, 0.7), 0 0 15px rgba(139, 92, 246, 0.5)",
+    transition: { duration: 0.3 },
+  },
+};
+
+const floatingBgVariants = {
+  animate: {
+    scale: [1, 1.1, 1],
+    opacity: [0.15, 0.25, 0.15],
+    transition: { duration: 6, ease: "easeInOut", repeat: Infinity },
+  },
+};
+
+const logoutButtonVariants = {
+  hover: {
+    scale: 1.05,
+    boxShadow: "0 0 12px rgba(139, 92, 246, 0.9), 0 0 24px rgba(102, 126, 234, 0.7)",
+    transition: { duration: 0.3 },
+  },
+  tap: { scale: 0.95 },
+};
+
+const pageVariants = {
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  exit: { opacity: 0, y: -15, transition: { duration: 0.3 } },
+};
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,136 +65,172 @@ const Dashboard = () => {
     window.location.reload();
   };
 
-  const activeClass = "bg-indigo-600 text-white shadow-md scale-[1.02]";
+  const activeClass =
+    "bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-lg scale-[1.05]";
   const inactiveClass =
-    "text-gray-800 hover:text-white hover:bg-indigo-500 hover:shadow-lg transition-all duration-300";
+    "text-indigo-700 hover:text-white hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-600 hover:shadow-lg transition-all duration-300";
 
   return (
-    <div className="flex flex-1 bg-gradient-to-br from-indigo-200 via-indigo-100 to-white min-h-screen">
-      {/* Sidebar */}
+    <div className="flex flex-1 min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-white overflow-hidden relative">
+      {/* Floating decorative background shape */}
       <motion.div
-        initial={{ x: -300 }}
-        animate={{ x: sidebarOpen || window.innerWidth >= 768 ? 0 : -300 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        className={`fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-50 transform md:relative transition-transform duration-300`}
+        variants={floatingBgVariants}
+        animate="animate"
+        className="fixed top-10 left-[-100px] w-72 h-72 rounded-full bg-gradient-to-r from-indigo-400 to-purple-600 blur-3xl pointer-events-none z-0"
+        aria-hidden="true"
+      />
+
+      {/* Sidebar */}
+      <motion.nav
+        initial="closed"
+        animate={sidebarOpen || window.innerWidth >= 768 ? "open" : "closed"}
+        variants={sidebarVariants}
+        className="fixed inset-y-0 left-0 w-64 bg-white bg-opacity-90 backdrop-blur-md shadow-xl z-50 rounded-r-3xl overflow-hidden md:relative md:rounded-none md:shadow-none"
       >
-        <div className="flex flex-col flex-grow pt-5 h-full">
+        <div className="flex flex-col flex-grow pt-6 h-full px-5">
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between px-4 font-bold text-2xl text-indigo-700"
+            transition={{ delay: 0.15 }}
+            className="flex items-center justify-between font-extrabold text-3xl text-indigo-700 tracking-wide select-none"
           >
             SkillSwap
             <button
-              className="md:hidden text-gray-600 hover:text-red-600"
+              aria-label="Close sidebar"
+              className="md:hidden text-indigo-500 hover:text-purple-600 focus:outline-none transition-transform duration-300"
               onClick={() => setSidebarOpen(false)}
             >
-              ✖
+              <motion.span
+                whileTap={{ rotate: 90 }}
+                className="block"
+                style={{ display: "inline-block" }}
+              >
+                ✕
+              </motion.span>
             </button>
           </motion.div>
 
-          <hr className="border-gray-200 mt-4" />
+          <hr className="border-indigo-200 my-6" />
 
-          <div className="flex flex-col flex-1 justify-between px-3 mt-6">
-            <nav className="space-y-3">
-              {[{
-                to: "/",
-                label: "🏠 Dashboard"
-              }, {
-                to: "/requests/find",
-                label: "🔍 Find by Skill"
-              }, {
-                to: "/requests/sent",
-                label: "📦 Sent Requests"
-              }, {
-                to: "/requests/received",
-                label: "📥 Received Requests"
-              }, {
-                to: "/chat",
-                label: "💬 Chat"
-              }].map((item, index) => (
+          <nav className="flex flex-col gap-3 flex-grow">
+            {navItems.map((item, i) => (
+              <motion.div
+                key={i}
+                variants={navItemVariants}
+                initial="initial"
+                animate="animate"
+                whileHover="hover"
+                className="rounded-lg"
+                transition={{ delay: 0.05 * i }}
+              >
                 <NavLink
-                  key={index}
                   to={item.to}
+                  end={item.to === "/"}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg transition-transform duration-300 transform hover:scale-[1.02] ${
+                    `flex items-center gap-3 px-6 py-3 text-base font-semibold rounded-lg transition-transform duration-300 transform cursor-pointer ${
                       isActive ? activeClass : inactiveClass
                     }`
                   }
-                  end={item.to === "/"}
                 >
                   {item.label}
                 </NavLink>
-              ))}
-            </nav>
+              </motion.div>
+            ))}
+          </nav>
 
-            <hr className="border-gray-200 mt-10" />
+          <hr className="border-indigo-200 my-6" />
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="pb-4"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                onClick={handleLogout}
-                className="flex items-center w-full px-5 py-3 text-sm font-medium text-gray-900 rounded-lg hover:bg-gray-200 transition"
-              >
-                <CiLogout className="w-5 h-5 mr-3" /> Log out
-              </motion.button>
-            </motion.div>
-          </div>
+          <motion.button
+            variants={logoutButtonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 shadow-md transition"
+          >
+            <CiLogout className="w-6 h-6" /> Log out
+          </motion.button>
         </div>
-      </motion.div>
+      </motion.nav>
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        <main className="p-6">
+      {/* Main content */}
+      <div className="flex flex-col flex-1 overflow-auto z-10">
+        {/* Top bar for small screen menu toggle */}
+        <header className="p-5 bg-white bg-opacity-70 backdrop-blur-md shadow-sm sticky top-0 z-30 flex justify-between items-center md:hidden">
+          <h1 className="text-xl font-bold text-indigo-700 tracking-wide select-none">
+            SkillSwap Dashboard
+          </h1>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+            className="text-indigo-700 hover:text-purple-700 focus:outline-none"
+          >
+            ☰
+          </motion.button>
+        </header>
+
+        <main className="p-8 max-w-7xl mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mx-auto max-w-7xl"
+            className="mb-8"
           >
-            <motion.div
-              className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-lg mb-6 border border-indigo-100"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
+            <motion.h2
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              transition={{
+                yoyo: Infinity,
+                duration: 1.6,
+                ease: "easeInOut",
+              }}
+              className="text-4xl font-extrabold text-indigo-700 select-none"
             >
-              <h1 className="text-3xl font-bold text-indigo-700 animate-pulse">
-                👋 Welcome to SkillSwap Dashboard
-              </h1>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 md:hidden text-xl text-indigo-700 hover:text-indigo-900"
-                onClick={() => setSidebarOpen(true)}
-              >
-                ☰
-              </motion.button>
-            </motion.div>
-
-            {/* Page Routes */}
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <StatsCards />
-                    <UserProfile />
-                  </>
-                }
-              />
-              <Route path="requests/send" element={<SendRequestForm />} />
-              <Route path="requests/sent" element={<SentRequestsList />} />
-              <Route path="requests/received" element={<ReceivedRequestsList />} />
-              <Route path="requests/find" element={<SearchUsersBySkill />} />
-              <Route path="chat" element={<ChatPage />} />
-            </Routes>
+              👋 Welcome to SkillSwap Dashboard
+            </motion.h2>
           </motion.div>
+
+          {/* Page routes with fade & slide animation on route change */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-8"
+            >
+              <Routes location={location} key={location.pathname}>
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                      >
+                        <StatsCards />
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <UserProfile />
+                      </motion.div>
+                    </>
+                  }
+                />
+                <Route path="requests/send" element={<SendRequestForm />} />
+                <Route path="requests/sent" element={<SentRequestsList />} />
+                <Route path="requests/received" element={<ReceivedRequestsList />} />
+                <Route path="requests/find" element={<SearchUsersBySkill />} />
+                <Route path="chat" element={<ChatPage />} />
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

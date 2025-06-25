@@ -27,7 +27,7 @@ const ChatPage = () => {
  const fetchAcceptedUsers = async () => {
   try {
     const res = await axios.get(
-      `https://swapskill-3546.onrender.com/api/v1/request/accepted`,
+      `${import.meta.env.VITE_BACKEND_URL}/api/v1/request/accepted`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

@@ -41,10 +41,14 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-8 bg-white rounded-3xl shadow-xl mt-12 border border-gray-200">
+    <div className="max-w-xl w-full mx-auto p-6 bg-white rounded-2xl shadow-md border border-gray-200">
+      <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">
+        Welcome, {profile.firstName}!
+      </h1>
+
       <div className="flex flex-col items-center space-y-4">
         <UserCircle2 className="w-20 h-20 text-blue-600" />
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-xl font-semibold text-gray-800">
           {profile.firstName + " " + profile.lastName}
         </h2>
         <p className="text-gray-600 flex items-center gap-2">
@@ -52,8 +56,8 @@ const UserProfile = () => {
           {profile.email}
         </p>
         <hr className="w-full border-t border-gray-300 my-4" />
-        <div className="w-full space-y-2">
-          <div className="flex items-center gap-2 text-gray-700">
+        <div className="w-full space-y-2 text-gray-700">
+          <div className="flex items-center gap-2 flex-wrap">
             <BrainCircuit className="w-5 h-5 text-indigo-600" />
             <strong>Skills Offered:</strong>{" "}
             {profile.skillsOffered?.join(", ") || "Not added"}

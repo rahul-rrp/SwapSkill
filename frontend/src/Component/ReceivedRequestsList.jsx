@@ -24,7 +24,7 @@ const ReceivedRequestsList = () => {
       }
 
       const res = await axios.get(
-        "https://swapskill-3546.onrender.com/api/v1/request/requests/received",
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/request/requests/received`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -53,7 +53,7 @@ const ReceivedRequestsList = () => {
       }
 
       await axios.put(
-        `https://swapskill-3546.onrender.com/api/v1/request/request/${requestId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/request/request/${requestId}`,
         { status }, // Backend expects "status" field for update
         {
           headers: { Authorization: `Bearer ${token}` },

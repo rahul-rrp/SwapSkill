@@ -17,7 +17,7 @@ const SearchUsersBySkill = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        `https://swapskill-3546.onrender.com/api/v1/request/user/userbyskills?skill=${skill}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/request/user/userbyskills?skill=${skill}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ const SearchUsersBySkill = () => {
     };
 
     try {
-      await axios.post("https://swapskill-3546.onrender.com/api/v1/request/request", payload, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/request/request`, payload, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
