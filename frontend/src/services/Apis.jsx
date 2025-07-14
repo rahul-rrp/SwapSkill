@@ -1,6 +1,6 @@
 // const BASE_URL = import.meta.env.VITE_BASE_URL;
 const BASE_URL = "https://swapskill-3546.onrender.com";
-// const BASE_URL = "http://localhost:5001";
+// const BASE_URL = "http://localhost:4000";
 //https://swapskill-3546.onrender.com
 export const authEndpoits = {
   SIGNUP_API: `${BASE_URL}/api/v1/auth/signUp`,

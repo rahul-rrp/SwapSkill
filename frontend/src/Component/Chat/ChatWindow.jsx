@@ -1,18 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { io } from "socket.io-client";
+
+const socket = io(import.meta.env.VITE_BACKEND_URL); // Setup socket connection
 
 const ChatWindow = ({ chat }) => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const scrollRef = useRef(null);
-
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    socket.emit("join_chat", chat._id);
+  }, [chat]);
 
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/${chat._id}/messages`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/chat/${chat._id}/messages`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -26,16 +32,31 @@ const ChatWindow = ({ chat }) => {
   const sendMessage = async () => {
     if (!text.trim()) return;
 
+    const payload = { chatId: chat._id, text };
+
     try {
-      await axios.post(
+      // 1. Save message to DB
+      const { data } = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/v1/chat/chat/message`,
-        { chatId: chat._id, text },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+      // 2. Emit real-time message
+      const message = {
+        senderId: { _id: userId }, // for rendering
+        text,
+        timestamp: new Date(),
+      };
+
+      socket.emit("send_message", {
+        chatId: chat._id,
+        message,
+      });
+
       setText("");
-      fetchMessages();
     } catch (err) {
       console.error("Failed to send message:", err);
     }
@@ -43,6 +64,13 @@ const ChatWindow = ({ chat }) => {
 
   useEffect(() => {
     fetchMessages();
+
+    // Listen to real-time incoming messages
+    socket.on("receive_message", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => socket.off("receive_message");
   }, [chat]);
 
   useEffect(() => {
