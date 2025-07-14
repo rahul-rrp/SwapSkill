@@ -453,9 +453,6 @@ const HeroSection = () => {
               <strong>SkillSwap</strong> © {new Date().getFullYear()}
             </p>
             <p>Developed by <strong>Rahul Prajapati</strong></p>
-            <p>UI & UX by <strong>Hritik Singh</strong></p>
-            <p>Docs by <strong>Kaif</strong></p>
-            <p>Support from <strong>Abhinandan Maurya</strong></p>
           </div>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <a
