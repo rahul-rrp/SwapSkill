@@ -447,34 +447,6 @@ const HeroSection = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.8, duration: 0.8 }}
       >
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
-          <div className="text-sm text-gray-600 space-y-1">
-            <p>
-              <strong>SkillSwap</strong> © {new Date().getFullYear()}
-            </p>
-            <p>Developed by <strong>Rahul Prajapati</strong></p>
-          </div>
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <a
-              href="https://www.linkedin.com/in/rahul-rrp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-500 hover:text-indigo-600 transition"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="w-6 h-6" />
-            </a>
-            <a
-              href="https://github.com/rahul-rrp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-500 hover:text-indigo-600 transition"
-              aria-label="GitHub"
-            >
-              <Github className="w-6 h-6" />
-            </a>
-          </div>
-        </div>
       </motion.footer>
 
       <style>{`
