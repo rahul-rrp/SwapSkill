@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { NavLink, Routes, Route, useLocation } from "react-router-dom";
-import { CiLogout } from "react-icons/ci";
 import StatsCards from "../Component/StatsCard";
 import UserProfile from "../Component/UserProfile";
 import SendRequestForm from "../Component/SendRequestForm";
@@ -41,15 +40,6 @@ const floatingBgVariants = {
   },
 };
 
-const logoutButtonVariants = {
-  hover: {
-    scale: 1.05,
-    boxShadow: "0 0 12px rgba(139, 92, 246, 0.9), 0 0 24px rgba(102, 126, 234, 0.7)",
-    transition: { duration: 0.3 },
-  },
-  tap: { scale: 0.95 },
-};
-
 const pageVariants = {
   initial: { opacity: 0, y: 15 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -59,11 +49,6 @@ const pageVariants = {
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
-  const handleLogout = () => {
-    localStorage.setItem("token", "");
-    window.location.reload();
-  };
 
   const activeClass =
     "bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-lg scale-[1.05]";
@@ -137,19 +122,6 @@ const Dashboard = () => {
               </motion.div>
             ))}
           </nav>
-
-          <hr className="border-indigo-200 my-6" />
-
-          <motion.button
-            variants={logoutButtonVariants}
-            whileHover="hover"
-            whileTap="tap"
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 shadow-md transition"
-          >
-            <CiLogout className="w-6 h-6" /> Log out
-          </motion.button>
         </div>
       </motion.nav>
 

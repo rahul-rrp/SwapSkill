@@ -4,13 +4,12 @@ import { toast, ToastContainer, Slide } from "react-toastify";
 import logo from '../assets/logo.png'
 import pic from '../assets/logo1.png'
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "../Component/Footer";
 import {
   Lightbulb,
   Users,
   GraduationCap,
   Search,
-  Linkedin,
-  Github,
   Zap,
   CheckCircle,
   Clock,
@@ -440,15 +439,7 @@ const HeroSection = () => {
           </motion.div>
         </div>
       </section>
-
-      <motion.footer
-        className="bg-white border-t border-gray-200 py-8 px-4 mt-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.8, duration: 0.8 }}
-      >
-      </motion.footer>
-
+      <Footer />
       <style>{`
         /* Custom toast purple pulse */
         .Toastify__toast--error.toast-purple-pulse {
