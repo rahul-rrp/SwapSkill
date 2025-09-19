@@ -2,6 +2,8 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const sendEmail = require("../utilis/sendEmail");
+const crypto = require("crypto");
 
 // SIGNUP Controller
 exports.signup = async (req, res) => {
@@ -185,6 +187,7 @@ exports.logout = (req, res) => {
 
 
 
+
 // @desc    Forgot password
 // @route   POST /api/auth/forgot
 exports.forgotPassword = async (req, res) => {
@@ -197,25 +200,34 @@ exports.forgotPassword = async (req, res) => {
 
     // 2. Create reset token
     const resetToken = user.getResetPasswordToken();
+  
 
-    // 3.Save user with reset token and expiry
+    // 3. Save user with reset token and expiry
     await user.save({ validateBeforeSave: false });
 
     // 4. Create reset link
     const resetUrl = `${req.protocol}://${req.get("host")}/api/auth/reset/${resetToken}`;
 
     // 5. Send email
-    await sendEmail({
-      email: user.email,
-      subject: "Password Reset Request",
-      message: `Click this link to reset your password: ${resetUrl}`,
-    });
+    await sendEmail(
+      user.email,
+      "Password Reset Request",
+      `<p>You requested a password reset.</p>
+       <p>Click this link to reset your password:</p>
+       <a href="${resetUrl}">${resetUrl}</a>`
+    );
 
-    res.json({ message: "Reset link sent to your email" });
+    // Return message (and resetUrl in dev mode)
+    const response = { message: "Reset link sent to your email" };
+
+
+    res.json(response);
   } catch (error) {
+    console.error("Forgot Password Error:", error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 
 
 // @desc    Reset password

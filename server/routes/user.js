@@ -16,8 +16,8 @@ const { auth } = require("../middlewares/Auth");
 router.post("/login", login);
 router.post("/signup", signup);
 router.get("/getUserDetails", auth, getUserDetails);
-router.post("/logout", auth, logout);            // ✅ This is for logging out.
-router.post("/forgot",forgotPassword);          // ✅ This is for initiating password reset.
-router.put("/reset/:token",auth, resetPassword);      // ✅ This is for resetting the password using the token.
+router.post("/logout", auth, logout);          // needs auth
+router.post("/forgot", forgotPassword);        // public
+router.put("/reset/:token", resetPassword);    // public (uses reset token, not JWT)
 
 module.exports = router;
