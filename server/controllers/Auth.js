@@ -15,6 +15,8 @@ exports.signup = async (req, res) => {
       image,
       skillsOffered,
       bio,
+      resetPasswordToken,
+      resetPasswordExpires
     } = req.body;
     console.log(req.body);
 
@@ -56,6 +58,8 @@ exports.signup = async (req, res) => {
       image,
       skillsOffered,
       bio,
+      resetPasswordToken,
+      resetPasswordExpires
     });
 
     return res.status(201).json({
@@ -179,3 +183,71 @@ exports.logout = (req, res) => {
   }
 };
 
+
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgot
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // 1. Find user
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 2. Create reset token
+    const resetToken = user.getResetPasswordToken();
+
+    // 3.Save user with reset token and expiry
+    await user.save({ validateBeforeSave: false });
+
+    // 4. Create reset link
+    const resetUrl = `${req.protocol}://${req.get("host")}/api/auth/reset/${resetToken}`;
+
+    // 5. Send email
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset Request",
+      message: `Click this link to reset your password: ${resetUrl}`,
+    });
+
+    res.json({ message: "Reset link sent to your email" });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+// @desc    Reset password
+// @route   PUT /api/auth/reset/:token
+exports.resetPassword = async (req, res) => {
+  try {
+    // 1. Hash the token from URL
+    const resetToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    // 2. Find user with this token and check expiry
+    const user = await User.findOne({
+      resetPasswordToken: resetToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+
+    // 3. Set new password
+    user.password = req.body.password;
+
+    // 4. Clear reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    // 5. Save user
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
