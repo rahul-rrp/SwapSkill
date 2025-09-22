@@ -4,8 +4,12 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const sendEmail = require("../utilis/sendEmail");
 const crypto = require("crypto");
+const Profile = require("../models/Profile");
 
-// SIGNUP Controller
+const User = require("../models/User");
+const Profile = require("../models/Profile");
+
+// ---------------- SIGNUP Controller ----------------
 exports.signup = async (req, res) => {
   try {
     const {
@@ -14,23 +18,21 @@ exports.signup = async (req, res) => {
       email,
       password,
       confirmPassword,
+      accountType,
       image,
       skillsOffered,
       bio,
-      resetPasswordToken,
-      resetPasswordExpires
     } = req.body;
-    console.log(req.body);
 
-    // Validate all fields 
-    if (!firstName || !lastName || !email || !password || !confirmPassword|| !skillsOffered || !bio) {
+    // 1. Validate required fields
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !accountType) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required!",
+        message: "All required fields must be provided!",
       });
     }
 
-    // Check if passwords match
+    // 2. Check if passwords match
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
@@ -38,32 +40,51 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    const emailExist = await User.findOne({ email });
-    console.log(emailExist);
-    if (emailExist) {
+    // 3. Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({
         success: false,
         message: "User already exists, please login.",
       });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
+    // 4. Create the user (password hashed via pre-save hook)
     const user = await User.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
-      image,
-      skillsOffered,
-      bio,
-      resetPasswordToken,
-      resetPasswordExpires
+      password,
+      accountType,
+      image: image || "",
+      skillsOffered: skillsOffered || [],
+      bio: bio || "",
     });
 
+    // 5. Create default profile linked to the user
+    const profile = await Profile.create({
+      user: user._id,
+      bio: "",
+      location: "",
+      skills: [],
+      interests: [],
+      socialLinks: {
+        linkedin: "",
+        github: "",
+        website: "",
+        twitter: "",
+      },
+      education: [],
+      experience: [],
+      profileImage: "",
+      achievements: [],
+    });
+
+    // 6. Link profile to user
+    user.additionalDetails = profile._id;
+    await user.save();
+
+    // 7. Return success response
     return res.status(201).json({
       success: true,
       message: "User registered successfully!",
@@ -71,9 +92,10 @@ exports.signup = async (req, res) => {
         id: user._id,
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
-      }
+        accountType: user.accountType,
+        profileId: profile._id,
+      },
     });
-
   } catch (error) {
     console.error("Signup Error:", error);
     return res.status(500).json({
@@ -82,6 +104,8 @@ exports.signup = async (req, res) => {
     });
   }
 };
+
+
 
 // LOGIN Controller
 exports.login = async (req, res) => {
@@ -115,11 +139,12 @@ exports.login = async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+const token = jwt.sign(
+  { id: user._id, email: user.email, role: user.accountType },
+  process.env.JWT_SECRET,
+  { expiresIn: "24h" }
+);
+
 
     user.password = undefined; // Don't send password back
 
@@ -145,30 +170,41 @@ exports.login = async (req, res) => {
   }
 };
 
+
 // GET USER DETAILS Controller
 exports.getUserDetails = async (req, res) => {
   try {
-    // Assumes auth middleware has set req.user
-    const user = await User.findById(req.user.id).select("-password");
+    // 1. Get user ID from auth middleware
+    const userId = req.user.id;
+
+    // 2. Find user by ID (exclude password)
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("additionalDetails"); // optional: populate Profile details if needed
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found.",
       });
     }
+
+    // 3. Send user data
     res.status(200).json({
       success: true,
       user,
     });
   } catch (error) {
     console.error("Get User Details Error:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Cannot fetch user data.",
     });
   }
 };
 
+
+// LOGOUT Controller
 exports.logout = (req, res) => {
   try {
     res.clearCookie("token");
@@ -243,23 +279,37 @@ exports.resetPassword = async (req, res) => {
     // 2. Find user with this token and check expiry
     const user = await User.findOne({
       resetPasswordToken: resetToken,
-      resetPasswordExpire: { $gt: Date.now() },
+      resetPasswordExpires: { $gt: Date.now() }, // ✅ fixed plural
     });
 
-    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
 
-    // 3. Set new password
-    user.password = req.body.password;
+    const { password, confirmPassword } = req.body;
 
-    // 4. Clear reset token fields
+    // 3. Check if passwords match
+    if (!password || !confirmPassword) {
+      return res.status(400).json({ message: "Password and Confirm Password are required" });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    // 4. Set new password (pre-save hook will hash it)
+    user.password = password;
+
+    // 5. Clear reset token fields
     user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    user.resetPasswordExpires = undefined;
 
-    // 5. Save user
+    // 6. Save user
     await user.save();
 
     res.json({ message: "Password updated successfully" });
   } catch (error) {
+    console.error("Reset Password Error:", error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+

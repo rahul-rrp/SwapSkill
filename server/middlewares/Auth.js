@@ -1,18 +1,16 @@
-const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
 dotenv.config();
 
-exports.auth = async (req, res, next) => {
+// Auth middleware → verifies JWT
+exports.auth = (req, res, next) => {
   try {
-    // Get token from headers, cookies, or body
     const token =
       req.headers["authorization"]?.replace("Bearer ", "") ||
       req.cookies?.token ||
       req.body?.token;
 
-    // If no token found
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -20,26 +18,68 @@ exports.auth = async (req, res, next) => {
       });
     }
 
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded JWT:", decoded);
-
-      // Attach decoded user info to req.user
-      req.user = decoded;
-    } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid or expired token. Please login again.",
-      });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // should contain { id, email, accountType }
 
     next();
   } catch (error) {
     console.error("Auth Middleware Error:", error);
-    return res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: "Something went wrong during authentication.",
+      message: "Invalid or expired token. Please login again.",
     });
   }
 };
+
+
+
+// Role middlewares
+exports.isStudent = (req, res, next) => {
+  if (req.user.accountType !== "Student") {
+    return res.status(403).json({
+      success: false,
+      message: "This route is for Students only",
+    });
+  }
+  next();
+};
+
+
+
+exports.isInstructor = (req, res, next) => {
+  if (req.user.accountType !== "Instructor") {
+    return res.status(403).json({
+      success: false,
+      message: "This route is for Instructors only",
+    });
+  }
+  next();
+};
+
+
+exports.isAdmin = (req, res, next) => {
+  if (req.user.accountType !== "Admin") {
+    return res.status(403).json({
+      success: false,
+      message: "This route is for Admins only",
+    });
+  }
+  next();
+};
+
+
+
+
+// Middleware to allow only specific roles/accountTypes
+exports.authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.accountType)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to perform this action",
+      });
+    }
+    next();
+  };
+};
+
