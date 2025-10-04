@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
+require("dotenv").config();
 
-dotenv.config();
+const User = require("../models/User"); // to fetch full user details
 
-// Auth middleware → verifies JWT
-exports.auth = (req, res, next) => {
+// Authentication Middleware
+
+exports.auth = async (req, res, next) => {
   try {
+    // Extract token
     const token =
       req.headers["authorization"]?.replace("Bearer ", "") ||
       req.cookies?.token ||
@@ -18,67 +20,59 @@ exports.auth = (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // should contain { id, email, accountType }
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // { id, email, username, accountType }
+
+    // Fetch full user from DB
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found. Please login again.",
+      });
+    }
+
+    // Attach full user
+    req.user = user; // now req.user._id exists
 
     next();
   } catch (error) {
-    console.error("Auth Middleware Error:", error);
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token. Please login again.",
-    });
-  }
-};
+    console.error("Auth Middleware Error:", error.message);
 
-
-
-// Role middlewares
-exports.isStudent = (req, res, next) => {
-  if (req.user.accountType !== "Student") {
-    return res.status(403).json({
-      success: false,
-      message: "This route is for Students only",
-    });
-  }
-  next();
-};
-
-
-
-exports.isInstructor = (req, res, next) => {
-  if (req.user.accountType !== "Instructor") {
-    return res.status(403).json({
-      success: false,
-      message: "This route is for Instructors only",
-    });
-  }
-  next();
-};
-
-
-exports.isAdmin = (req, res, next) => {
-  if (req.user.accountType !== "Admin") {
-    return res.status(403).json({
-      success: false,
-      message: "This route is for Admins only",
-    });
-  }
-  next();
-};
-
-
-
-
-// Middleware to allow only specific roles/accountTypes
-exports.authorizeRoles = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.accountType)) {
-      return res.status(403).json({
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
         success: false,
-        message: "You are not authorized to perform this action",
+        message: "Token expired. Please login again.",
       });
     }
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token. Please login again.",
+    });
+  }
+};
+
+// Generic Role Authorization Middleware
+exports.authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.accountType) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. User is not authorized.",
+      });
+    }
+
+    const userRole = req.user.accountType.toLowerCase();
+    const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());
+
+    if (!normalizedAllowedRoles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Requires one of: ${allowedRoles.join(", ")}`,
+      });
+    }
+
     next();
   };
 };

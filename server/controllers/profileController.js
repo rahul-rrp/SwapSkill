@@ -49,7 +49,7 @@ exports.updateProfile = async (req, res) => {
     const targetUserId = req.params.userId || requesterId;
 
     // Normal users cannot update others
-    if (requesterRole !== "Admin" && targetUserId !== requesterId) {
+    if (requesterRole !== "admin" && targetUserId !== requesterId) {
       return res.status(403).json({ success: false, message: "Not authorized to update this profile." });
     }
 
@@ -83,10 +83,10 @@ exports.deleteProfile = async (req, res) => {
     const requesterRole = req.user.accountType;
     let targetUserId = requesterId;
 
-    if (requesterRole === "Admin" && req.params.userId) {
+    if (requesterRole === "admin" && req.params.userId) {
         targetUserId = req.params.userId;
     }
-    else if (requesterRole !== "Admin" && req.params.userId && req.params.userId !== requesterId) {
+    else if (requesterRole !== "admin" && req.params.userId && req.params.userId !== requesterId) {
         return res.status(403).json({ success: false, message: "Not authorized to delete this profile." });
     }
     const profile = await Profile.findOneAndDelete({ user: targetUserId });

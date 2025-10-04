@@ -49,10 +49,17 @@ io.on("connection", (socket) => {
 const userRoutes = require("./routes/user");
 const requestRoutes = require("./routes/request");
 const chatRoutes = require("./routes/chat");
+const reviewRoutes = require("./routes/review");
+const notificationRoutes = require("./routes/notificationRoutes");
+
+
+
 
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/request", requestRoutes);
 app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/review", reviewRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
