@@ -4,7 +4,7 @@ const socketIO = require("socket.io");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
-
+const initSessionReminders = require("./utilis/sessionReminders");
 // Initialize
 dotenv.config();
 const app = express();
@@ -25,6 +25,10 @@ app.use(express.json());
 // Connect DB
 const { connect } = require("./config/db");
 connect();
+
+// After DB connection
+const initSessionReminders = require("./utils/sessionReminders");
+initSessionReminders();
 
 // Socket.io Logic
 io.on("connection", (socket) => {
@@ -51,6 +55,7 @@ const requestRoutes = require("./routes/request");
 const chatRoutes = require("./routes/chat");
 const reviewRoutes = require("./routes/review");
 const notificationRoutes = require("./routes/notificationRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
 
 
 
@@ -60,7 +65,7 @@ app.use("/api/v1/request", requestRoutes);
 app.use("/api/v1/chat", chatRoutes);
 app.use("/api/v1/review", reviewRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
-
+app.use("/api/v1/sessions", sessionRoutes);
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
